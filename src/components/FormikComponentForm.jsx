@@ -1,5 +1,5 @@
 import React from "react";
-import { Formik, Form, Field, ErrorMessage, FieldArray } from "formik";
+import { Formik, Form, Field, FastField, ErrorMessage, FieldArray } from "formik";
 import * as Yup from "yup";
 import "../App.css";
 import TextError from "./TextError";
@@ -14,13 +14,23 @@ const initialValues = {
     facebook: "",
     twitter: "",
   },
-  phoneNumbers: ["",""],
+  phoneNumbers: ["", ""],
   skills: [""],
+  hobbies: [""],
+  educationField: [""],
 };
 
 const onSubmit = (values) => {
   console.log("Form Data", values);
 };
+
+const validateComments = (value) => {
+  let error;
+  if(!value) {
+    error = 'Required'
+  }
+  return error;
+}
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Required!!"),
@@ -30,11 +40,15 @@ const validationSchema = Yup.object({
 });
 
 const FormikComponentForm = () => {
+
+  console.log("File rerendered");
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={validationSchema}
+      validateOnChange={false} //to prevent validation while entering data onChange.
+      validateOnBlur={false}   //to prevent validation on Blur event like clicking somewhere else in the page.
     >
       <Form className="form Formik-component">
         <div className="form-controls">
@@ -57,16 +71,16 @@ const FormikComponentForm = () => {
 
         <div className="form-controls">
           <label htmlFor="comments">Comments</label>
-          <Field as="textarea" id="comments" name="comments" />
+          <Field as="textarea" id="comments" name="comments" validate={validateComments} />
           <ErrorMessage name="comments" component={TextError} />
         </div>
 
         <div className="form-controls">
           <label htmlFor="address">Address</label>
-          <Field name="address">
+          <FastField name="address">
             {(props) => {
               const { field, form, meta } = props;
-              console.log("Render props", props, form);
+              // console.log("Render props", props, form);
               return (
                 <>
                   <input
@@ -82,7 +96,7 @@ const FormikComponentForm = () => {
                 </>
               );
             }}
-          </Field>
+          </FastField>
         </div>
 
         <div className="form-controls">
@@ -107,20 +121,117 @@ const FormikComponentForm = () => {
 
         <div className="form-controls">
           <label htmlFor="">List of Skills</label>
-          <FieldArray name="skils">
-            {
-              (FieldArrayProps) => {
-                console.log("FieldArrayProps", FieldArrayProps);
-                const {push, remove, form} = FieldArrayProps;
-                const {values} = form;
-                const {skills} = values;
-                return (
-                  <div>
-                    FieldArrayProps
-                  </div>
-                )
-              }
-            }
+          <FieldArray name="skills">
+            {(FieldArrayProps) => {
+              // console.log("FieldArrayProps", FieldArrayProps);
+              const { push, remove, form } = FieldArrayProps;
+              const { values } = form;
+              const { skills } = values;
+              // console.log("skills", skills);
+              return (
+                <div>
+                  {skills.map((skill, index) => {
+                    return (
+                      <div key={index}>
+                        <Field name={`skills[${index}]`} />
+                        {index > 0 && (
+                          <button type="button" onClick={() => remove(index)}>
+                            -
+                          </button>
+                        )}
+                        <button type="button" onClick={() => push("")}>
+                          +
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            }}
+          </FieldArray>
+        </div>
+
+        <div className="form-controls">
+          <label htmlFor="">List of Hobbies</label>
+          <FieldArray name="hobbies">
+            {(hobbieArraysProps) => {
+              // console.log("FieldArrayProps", hobbieArraysProps);
+              const { push, remove, form } = hobbieArraysProps;
+              const { values } = form;
+              const { hobbies } = values;
+              // console.log("hobbies", hobbies);
+              return (
+                <div>
+                  <h3>Hobbies</h3>
+                  {hobbies.map((_, index) => (
+                    <div key={index} className="hobbie-field">
+                      <Field
+                        type="text"
+                        name={`hobbies[${index}]`}
+                        placeholder="Enter Hobbies"
+                      />
+                      {/* Remove button (if more than 1 phone number exists) */}
+                      {hobbies.length > 1 && (
+                        <button type="button" onClick={() => remove(index)}>
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Add phone number button */}
+                  <button type="button" onClick={() => push("")}>
+                    Add Hobby
+                  </button>
+                </div>
+              );
+            }}
+          </FieldArray>
+        </div>
+
+        <div className="form-controls">
+          <label htmlFor="">List of educations</label>
+          <FieldArray name="educationField">
+            {({ push, remove, form }) => {
+              const { values, setFieldValue } = form;
+              const { educationField } = values;
+              // console.log("educationField", educationField);
+
+              return (
+                <div>
+                  <h3>educationField</h3>
+
+                  {/* Display hobbies as divs */}
+                  {educationField.map((education, index) => (
+                    <div key={index} className="educationField">
+                      <span>{education}</span>{" "}
+                      {/* Show hobby value inside a span */}
+                      {education.length > 0 && (
+                        <button type="button" onClick={() => remove(index)}>
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Input field to add new hobby */}
+                  <Field name="newEducation" placeholder="Enter education" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // console.log("setFieldValue", setFieldValue, values);
+                      const newEducation = values.newEducation.trim();
+                      if (newEducation) {
+                        push(newEducation); // Add hobby to the array
+                        setFieldValue("newEducation", ""); // Clear input after adding
+                      }
+                    }}
+                  >
+                    Add Education
+                  </button>
+                </div>
+              );
+            }}
           </FieldArray>
         </div>
 

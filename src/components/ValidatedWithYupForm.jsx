@@ -28,9 +28,9 @@ const ValidateWithYupForm = () => {
     validationSchema,
   });
 
-  console.log("formik values", formik.values); //returns values of all the fields.
-  console.log("formik errors", formik.errors); //returns error object which contains an info about the field containing error
-  console.log("Visited fields", formik.touched); //returns an object containing names of input field which are visited.
+  // console.log("formik values", formik.values); //returns values of all the fields.
+  // console.log("formik errors", formik.errors); //returns error object which contains an info about the field containing error
+  // console.log("Visited fields", formik.touched); //returns an object containing names of input field which are visited.
 
   return (
     <div className="form YUP">
