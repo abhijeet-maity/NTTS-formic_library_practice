@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
   Formik,
   Form,
@@ -27,8 +27,31 @@ const initialValues = {
   educationField: [""],
 };
 
-const onSubmit = (values) => {
-  console.log("Form Data", values);
+// This is the saved data where we are hardcoding the values to just simulate 
+// how formik actually loads the saved data, and displays it in form.
+// In real time, the data is loaded by calling an API.
+// In this case it's just mock data.
+
+const savedValues = {
+  name: "Abhijeet Maity",
+  email: "abhi@email.com",
+  channel: "DeepDive",
+  comments: "Great content",
+  address: "",
+  social: {
+    facebook: "",
+    twitter: "",
+  },
+  phoneNumbers: ["", ""],
+  skills: ["Communication"],
+  hobbies: ["Book reading"],
+  educationField: [""],
+};
+
+const onSubmit = (values, onsubmitProps) => {
+  console.log("Form Data", values, onsubmitProps);
+  onsubmitProps.setSubmitting(false);
+  onsubmitProps.resetForm(); //to reset the form use this or the reset button
 };
 
 const validateComments = (value) => {
@@ -47,17 +70,21 @@ const validationSchema = Yup.object({
 });
 
 const FormikComponentRenderProps = () => {
+  const [savedFormValues, setSavedFormValues] = useState(null);
   console.log("File rerendered");
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={savedFormValues || initialValues}
       onSubmit={onSubmit}
       validationSchema={validationSchema}
       validateOnChange={false} //to prevent validation while entering data onChange.
       validateOnBlur={false} //to prevent validation on Blur event like clicking somewhere else in the page.
+      // validateOnMount // runs validation as soon as form loads.
+      enableReinitialize // allows to reinitialize the initial data with previosly saved data.
     >
       {(formik) => {
         console.log(formik);
+        console.log("Is form valid", formik.isValid);
         return (
           <Form className="form Formik-component">
             <div className="form-controls">
@@ -292,7 +319,20 @@ const FormikComponentRenderProps = () => {
             >
               visit all
             </button>
-            <button type="submit">Submit</button>
+            {/* Disabling submit button when form has empty required fields*/}
+            {/* <button type="submit" disabled={!(formik.isValid && formik.dirty)} >Submit</button> */}
+            {/* Disable submit button while form is being submitted */}
+            {/* <button type="submit" disabled={formik.isSubmitting} >Submit</button> */}
+            {/* Combined functionality of above two buttons */}
+            <button type="button" onClick={() => setSavedFormValues(savedValues)}>Load saved Data</button>
+            {/* Resets the form to initial value object. */}
+            <button type="reset">Reset Form</button>  
+            <button
+              type="submit"
+              disabled={!formik.isValid || formik.isSubmitting}
+            >
+              Submit
+            </button>
           </Form>
         );
       }}
